@@ -1,6 +1,16 @@
-def main():
-    print("Hello from api!")
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Date     : 2026/01/28
+# @Author   : Gelin
+# @File     : main.py
+
+from fastapi import FastAPI
+from core.config import get_settings
 
 
-if __name__ == "__main__":
-    main()
+settings = get_settings()
+print(settings)
+
+
+app = FastAPI()
+
