@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 from app.interfaces.endpoints.routes import router
 from app.interfaces.errors.exception_handlers import register_exception_handlers
 from app.infrastructure.storage.redis import get_redis
+from app.infrastructure.storage.postgres import get_postgres
 
 # 1、加载配置信息
 settings = get_settings()
@@ -42,6 +43,10 @@ async def lifespan(app: FastAPI):
     redis = get_redis()
     await redis.init()
 
+    # 3、初始化postgres客户端
+    postgres = get_postgres()
+    await postgres.init()
+
     # todo内容
 
     try:
@@ -49,6 +54,7 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         await redis.shutdown()
+        await postgres.shutdown()
         logger.info("App正在关闭...")
 
 # 4、创建项目应用实例app
