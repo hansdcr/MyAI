@@ -15,6 +15,7 @@ from app.infrastructure.logging import setup_logging
 from contextlib import asynccontextmanager
 from app.interfaces.endpoints.routes import router
 from app.interfaces.errors.exception_handlers import register_exception_handlers
+from app.infrastructure.storage.redis import get_redis
 
 # 1、加载配置信息
 settings = get_settings()
@@ -37,12 +38,17 @@ async def lifespan(app: FastAPI):
     # 1、打印日志表示程序开始了
     logger.info("App正在初始化....")
 
+    # 2、初始化redis缓存客户端
+    redis = get_redis()
+    await redis.init()
+
     # todo内容
 
     try:
         #lifespan节点/分界。（yield之前可以放些例如数据库初始化内容，finally中可以放关闭数据库连接内容）
         yield
     finally:
+        await redis.shutdown()
         logger.info("App正在关闭...")
 
 # 4、创建项目应用实例app
