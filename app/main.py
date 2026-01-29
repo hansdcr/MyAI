@@ -14,6 +14,7 @@ from core.config import get_settings
 from app.infrastructure.logging import setup_logging
 from contextlib import asynccontextmanager
 from app.interfaces.endpoints.routes import router
+from app.interfaces.errors.exception_handlers import register_exception_handlers
 
 # 1、加载配置信息
 settings = get_settings()
@@ -62,5 +63,9 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# 5、继承路由
+# 6、注册错误处理器
+register_exception_handlers(app)
+
+
+# 7、继承路由
 app.include_router(router, prefix="/api")
