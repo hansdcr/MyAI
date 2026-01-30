@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     redis_password:str | None = None
 
     # COS对象存储相关配置
+    cos_secret_id: str = ""
+    cos_secret_key: str = ""
+    cos_region: str = ""
+    cos_scheme: str = "https"
+    cos_bucket: str = ""
+    cos_domain: str = ""
 
 
     #使用pydantic v2写法来完成环境变量的告知

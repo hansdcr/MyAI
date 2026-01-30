@@ -17,6 +17,7 @@ from app.interfaces.endpoints.routes import router
 from app.interfaces.errors.exception_handlers import register_exception_handlers
 from app.infrastructure.storage.redis import get_redis
 from app.infrastructure.storage.postgres import get_postgres
+from app.infrastructure.storage.cos import get_cos
 
 # 1、加载配置信息
 settings = get_settings()
@@ -47,7 +48,9 @@ async def lifespan(app: FastAPI):
     postgres = get_postgres()
     await postgres.init()
 
-    # todo内容
+    # 4、初始化腾讯云cos对象存储客户端
+    cos = get_cos()
+    await cos.init()
 
     try:
         #lifespan节点/分界。（yield之前可以放些例如数据库初始化内容，finally中可以放关闭数据库连接内容）
@@ -55,6 +58,7 @@ async def lifespan(app: FastAPI):
     finally:
         await redis.shutdown()
         await postgres.shutdown()
+        await cos.shutdown()
         logger.info("App正在关闭...")
 
 # 4、创建项目应用实例app
