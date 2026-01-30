@@ -11,3 +11,4 @@ wheels/
 
 #禁止提交.env文件
 .env
+*.env
