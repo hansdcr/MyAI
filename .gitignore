@@ -4,6 +4,10 @@
 .env.*.local
 *.env
 
+# 忽略 pytest测试缓存
+.pytest_cache/
+tmp/.pytest_cache/
+
 # Python
 __pycache__/
 *.py[cod]
