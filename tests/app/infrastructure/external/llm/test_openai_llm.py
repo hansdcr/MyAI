@@ -18,7 +18,7 @@ class TestOpenAILLM:
         """测试基本的invoke调用"""
         llm = OpenAILLM(LLMConfig(
             base_url="https://api.deepseek.com",
-            api_key="sk-ef8e8cd46a35464d8f4077b97d00a4f3",  # 需要配置真实的API Key
+            api_key="xxx",  # 需要配置真实的API Key
             model_name="deepseek-chat",
         ))
 
