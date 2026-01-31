@@ -8,6 +8,9 @@
 .pytest_cache/
 tmp/.pytest_cache/
 
+# 忽略IDE缓存
+.idea/
+
 # Python
 __pycache__/
 *.py[cod]
