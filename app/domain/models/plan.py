@@ -55,4 +55,3 @@ class Plan(BaseModel):
     def get_next_step(self) -> Optional[Step]:
         """获取要执行的下一个步骤"""
         return next((step for step in self.steps if not step.done),None)
-    
