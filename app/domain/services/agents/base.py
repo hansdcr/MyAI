@@ -19,6 +19,7 @@ from app.domain.models.memory import Memory
 from app.domain.models.event import Event, ToolEvent, ToolEventStatus, ErrorEvent
 from app.domain.models.tool_result import ToolResult
 from app.domain.services.tools.base import BaseTool
+from app.domain.models.message import Message
 
 
 logger = logging.getLogger(__name__)
@@ -102,8 +103,34 @@ class BaseAgent(ABC):
         self._memory.compact()
 
     #todo: Agent回滚roll_back还未出现
-    async def roll_back(self):
-        pass
+    async def roll_back(self, message:Message) -> None:
+        """Agent状态会滚，该函数用于确保Agent的消息列表状态是正确的，用于发送消息，暂停/停止任务"""
+        #1. 取出记忆中的最后一条消息，检查是否是工具调用
+        last_message = self._memory.get_last_message()
+        if (
+            not last_message or
+            not last_message.get("tool_calls") or
+            len(last_message.get("tool_calls")) == 0
+        ):
+            return
+        # 2. 取出消息中的工具调用参数
+        tool_calls = last_message.get("tool_calls")[0]
+
+        # 3.提取工具名字 id
+        function_name = tool_calls.get("function_name",{}).get("name")
+        tool_call_id = tool_calls.get("id")
+
+        #4.判断当前的工具是不是通知用户(message_ask_user)
+        if function_name == "message_ask_user":
+            self._memory.add_message({
+                "role": "tool",
+                "tool_call_id": tool_call_id,
+                "function_name": function_name,
+                "content": message.model_dump_json(),
+            })
+        else:
+            # 5. 否则直接删除最后一条消息
+            self._memory.roll_back()
 
     async def _invoke_llm(self,messages: List[Dict[str, Any]],format: Optional[str]=None) -> Dict[str, Any] :
         """调用语言模型并处理记忆内容"""
