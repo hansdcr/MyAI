@@ -5,7 +5,7 @@
 # @File     : app_config_service.py
 
 import logging
-from app.domain.models.app_config import AppConfig, LLMConfig
+from app.domain.models.app_config import AppConfig, LLMConfig, AgentConfig
 from app.domain.repositories.app_config_repository import AppConfigRepository
 
 logger = logging.getLogger(__name__)
@@ -17,18 +17,19 @@ class AppConfigService:
         """构造函数，完成应用配置服务的初始化 """
         self.app_config_respository = app_config_respository
     
-    def _load_app_config(self) -> AppConfig:
+    async def _load_app_config(self) -> AppConfig:
         """加载获取所有的应用配置"""
         return self.app_config_respository.load()
 
-    def get_llm_config(self) -> LLMConfig:
+    async def get_llm_config(self) -> LLMConfig:
         """加载获取LLM提供商配置"""
-        return self._load_app_config().llm_config
+        app_config = await self._load_app_config()
+        return app_config.llm_config
     
-    def update_llm_config(self,llm_config:LLMConfig) -> LLMConfig:
+    async def update_llm_config(self,llm_config:LLMConfig) -> LLMConfig:
         """根据传递的llm_config更新语言模型提供商配置"""
         # 1、获取应用配置
-        app_config = self._load_app_config()
+        app_config = await self._load_app_config()
         # 2、判断api_key是否为空
         if not llm_config.api_key.strip():
             llm_config.api_key = app_config.llm_config.api_key
@@ -37,3 +38,22 @@ class AppConfigService:
         self.app_config_respository.save(app_config)
     
         return app_config.llm_config
+
+
+
+
+    async def get_agent_config(self) -> AgentConfig:
+        """加载获取agent配置"""
+        app_config = await self._load_app_config()
+        return app_config.agent_config
+
+    async def update_agent_config(self, agent_config: AgentConfig) -> AgentConfig:
+        """根据传递的agent_config更新配置"""
+        # 1、获取应用配置
+        app_config = await self._load_app_config()
+        # 2.
+        app_config.agent_config = agent_config
+        self.app_config_respository.save(app_config)
+
+        return app_config.agent_config
+
