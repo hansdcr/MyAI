@@ -16,7 +16,7 @@ from app.domain.external.llm import LLM
 from app.domain.external.json_parser import JSONParser
 from app.domain.models.app_config import AgentConfig
 from app.domain.models.memory import Memory
-from app.domain.models.event import Event, ToolEvent, ToolEventStatus, ErrorEvent
+from app.domain.models.event import Event, ToolEvent, ToolEventStatus, ErrorEvent, MessageEvent
 from app.domain.models.tool_result import ToolResult
 from app.domain.services.tools.base import BaseTool
 from app.domain.models.message import Message
@@ -245,3 +245,5 @@ class BaseAgent(ABC):
             # 13. 超过最大迭代次数后，则抛出错误
             yield ErrorEvent(error=f"Agent迭代超出最大迭代次数: {self._agent_config.max_iterations},任务处理失败")
 
+        # 14. 在指定步骤内完成了迭代则返回消息事件
+        yield MessageEvent(message=message["content"])
