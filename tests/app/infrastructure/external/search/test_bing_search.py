@@ -14,20 +14,24 @@ class TestBingSearch:
     """测试Bing搜索引擎"""
 
     @pytest.mark.asyncio
-    async def test_search_gemini(self):
-        """测试搜索'gemini'关键词"""
+    @pytest.mark.parametrize("query", ["gemini", "python", "fastapi"])
+    async def test_search_with_query(self, query: str):
+        """测试搜索指定关键词
+
+        Args:
+            query: 搜索关键词
+        """
         # 创建搜索引擎实例
         search_engine = BingSearchEngine()
 
         # 执行搜索
-        result = await search_engine.invoke("gemini")
+        result = await search_engine.invoke(query)
 
         # 打印原始结果用于调试
         print(f"\n=== 搜索结果调试信息 ===")
         print(f"success: {result.success}")
         print(f"message: {result.message}")
         print(f"data type: {type(result.data)}")
-        print(f"data: {result.data}")
 
         # 验证搜索成功
         assert result.success is True, f"搜索应该成功，但失败了: {result.message}"
@@ -40,7 +44,7 @@ class TestBingSearch:
             search_results = result.data
 
         # 验证搜索结果数据结构
-        assert search_results.query == "gemini", "查询关键词应该是'gemini'"
+        assert search_results.query == query, f"查询关键词应该是'{query}'"
 
         # 打印搜索结果供人工验证
         print(f"\n=== 搜索结果 ===")
@@ -69,7 +73,25 @@ class TestBingSearch:
             print("1. Bing页面结构发生了变化")
             print("2. 被重定向到了不同的Bing版本（如cn.bing.com）")
             print("3. 网络问题或被限流")
-            print("\n建议: 手动访问 https://www.bing.com/search?q=gemini 检查页面结构")
+            print(f"\n建议: 手动访问 https://www.bing.com/search?q={query} 检查页面结构")
 
             # 不强制要求有结果，因为这可能是Bing的问题
             pytest.skip("未能解析到搜索结果，可能是Bing页面结构变化")
+
+    @pytest.mark.asyncio
+    async def test_search_custom_query(self):
+        """测试自定义搜索关键词（可以通过命令行参数传入）"""
+        # 可以通过环境变量或pytest参数传入自定义查询
+        import os
+        custom_query = os.getenv("BING_SEARCH_QUERY", "gemini")
+
+        search_engine = BingSearchEngine()
+        result = await search_engine.invoke(custom_query)
+
+        assert result.success is True
+        assert result.data is not None
+
+        search_results = SearchResults(**result.data) if isinstance(result.data, dict) else result.data
+        assert search_results.query == custom_query
+
+        print(f"\n搜索 '{custom_query}' 返回 {len(search_results.results)} 条结果")
