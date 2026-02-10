@@ -95,3 +95,68 @@ class TestBingSearch:
         assert search_results.query == custom_query
 
         print(f"\n搜索 '{custom_query}' 返回 {len(search_results.results)} 条结果")
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("query,date_range", [
+        ("gemini", "day"),
+        ("python", "week"),
+        ("fastapi", "month"),
+        ("AI", "year"),
+    ])
+    async def test_search_with_date_range(self, query: str, date_range: str):
+        """测试带日期范围的搜索
+
+        Args:
+            query: 搜索关键词
+            date_range: 日期范围，可选值: day, week, month, year
+        """
+        # 创建搜索引擎实例
+        search_engine = BingSearchEngine()
+
+        # 执行搜索
+        result = await search_engine.invoke(query, date_range=date_range)
+
+        # 打印原始结果用于调试
+        print(f"\n=== 搜索结果调试信息 ===")
+        print(f"success: {result.success}")
+        print(f"message: {result.message}")
+
+        # 验证搜索成功
+        assert result.success is True, f"搜索应该成功，但失败了: {result.message}"
+        assert result.data is not None, "搜索结果不应为空"
+
+        # 将data转换为SearchResults对象
+        if isinstance(result.data, dict):
+            search_results = SearchResults(**result.data)
+        else:
+            search_results = result.data
+
+        # 验证搜索结果数据结构
+        assert search_results.query == query, f"查询关键词应该是'{query}'"
+        assert search_results.date_range == date_range, f"日期范围应该是'{date_range}'"
+
+        # 打印搜索结果供人工验证
+        print(f"\n=== 搜索结果 ===")
+        print(f"搜索关键词: {search_results.query}")
+        print(f"日期范围: {search_results.date_range}")
+        print(f"总结果数: {search_results.total_results}")
+        print(f"返回结果数: {len(search_results.results)}")
+
+        # 如果有结果，打印前3条
+        if len(search_results.results) > 0:
+            print(f"\n前3条搜索结果（最近{date_range}内）:")
+            for i, item in enumerate(search_results.results[:3], 1):
+                print(f"\n{i}. {item.title}")
+                print(f"   URL: {item.url}")
+                snippet_preview = item.snippet[:100] + "..." if len(item.snippet) > 100 else item.snippet
+                print(f"   摘要: {snippet_preview}")
+
+            # 验证第一条搜索结果的结构
+            first_result = search_results.results[0]
+            assert first_result.title, "搜索结果应该有标题"
+            assert first_result.url, "搜索结果应该有URL"
+            assert first_result.url.startswith("http"), "URL应该以http开头"
+        else:
+            print("\n⚠️  警告: 没有解析到搜索结果")
+            print(f"建议: 手动访问 https://www.bing.com/search?q={query} 检查页面结构")
+            pytest.skip("未能解析到搜索结果，可能是Bing页面结构变化")

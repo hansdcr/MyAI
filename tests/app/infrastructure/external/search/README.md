@@ -13,6 +13,29 @@ pytest tests/app/infrastructure/external/search/ -v -s
 pytest tests/app/infrastructure/external/search/test_bing_search.py::TestBingSearch::test_search_gemini -v -s
 ```
 
+```angular2html
+  运行所有日期范围测试                                                                                                                                                                                               
+                                                                                                                                                                                                                     
+  pytest tests/app/infrastructure/external/search/test_bing_search.py::TestBingSearch::test_search_with_date_range -v -s                                                                                             
+                                                                                                                                                                                                                     
+  运行特定参数的测试                                                                                                                                                                                                 
+                                                                                                                                                                                                                     
+  # 测试 gemini + day                                                                                                                                                                                                
+  pytest tests/app/infrastructure/external/search/test_bing_search.py::TestBingSearch::test_search_with_date_range[gemini-day] -v -s                                                                                 
+                                                                                                                                                                                                                     
+  # 测试 python + week                                                                                                                                                                                               
+  pytest tests/app/infrastructure/external/search/test_bing_search.py::TestBingSearch::test_search_with_date_range[python-week] -v -s                                                                                
+                                                                                                                                                                                                                     
+  自定义参数                                                                                                                                                                                                         
+                                                                                                                                                                                                                     
+  直接修改代码中的参数列表（第88-93行）：                                                                                                                                                                            
+  @pytest.mark.parametrize("query,date_range", [                                                                                                                                                                     
+      ("你的关键词1", "day"),                                                                                                                                                                                        
+      ("你的关键词2", "week"),                                                                                                                                                                                       
+      ("你的关键词3", "month"),                                                                                                                                                                                      
+  ]) 
+```
+
 ## 测试说明
 
 ### test_search_gemini
