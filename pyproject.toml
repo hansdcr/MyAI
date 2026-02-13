@@ -15,6 +15,7 @@ dependencies = [
     "httpx>=0.28.1",
     "json-repair>=0.56.0",
     "logging>=0.4.9.6",
+    "mcp>=1.26.0",
     "openai>=2.15.0",
     "property>=2.6.2",
     "psycopg2-binary>=2.9.11",
