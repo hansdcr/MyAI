@@ -246,4 +246,3 @@ class BrowserTool(BaseTool):
     async def browser_console_view(self,max_lines:Optional[int]=None) -> ToolResult:
         """传递浏览的最大行数查看控制台输出"""
         return await self.browser.console_view(max_lines)
-    
