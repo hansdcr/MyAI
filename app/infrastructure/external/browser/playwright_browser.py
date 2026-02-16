@@ -91,7 +91,7 @@ class PlaywrightBrowser(BrowserProtocol):
             if self.browser:
                 #2.获取该浏览器的所有上下文
                 contexts = self.browser.contexts
-                if context:
+                if contexts:
                     #3.循环遍历所有上下文逐个处理
                     for context in contexts:
                         #4. 获取每个上下文的所有页面
