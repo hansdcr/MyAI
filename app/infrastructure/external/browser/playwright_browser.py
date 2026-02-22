@@ -13,7 +13,7 @@ from playwright.async_api import Playwright,Browser,Page,async_playwright
 
 from app.domain.external.browser import Browser as BrowserProtocol
 from app.domain.external.llm import LLM
-from .playwright_browser_fun import GET_VISIBLE_CONTENT_FUNC
+from .playwright_browser_fun import GET_VISIBLE_CONTENT_FUNC,GET_INTERACTIVE_ELEMENTS_FUNC
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +92,29 @@ class PlaywrightBrowser(BrowserProtocol):
             return response.get("content","")
         else:
             return markdown_content[:markdown_content_length]
+
+
+    async def _extract_interactive_elements(self) -> List[str]:
+        """提取当前页面上的可交互元素"""
+        # 1.确保页面存在
+        await self._ensure_page()
+
+        # 2.清除当前页面上的缓存可交互元素列表
+        self.page.interactive_elements_cache = []
+
+        # 3.执行js脚本获取可交互的元素列表
+        interactive_elements = await self.page.evaluate(GET_INTERACTIVE_ELEMENTS_FUNC)
+
+        # 4.更新缓存的可交互元素列表
+        self.page.interactive_elements_cache = interactive_elements
+
+        # 5.格式化可交互元素为字符串
+        # 可见元素返回的格式 `index[:]<tag>text</tag>` ,其中 `index` 用于后续浏览器中的交互
+        formatted_elements = []
+        for element in interactive_elements:
+            formatted_elements.append(f"{element['index']}:<{element['tag']}>{element['text']}</{element['tag']}>")
+
+        return formatted_elements
 
     async def initialize(self) -> bool:
         """初始化并确保资源是可用的"""
