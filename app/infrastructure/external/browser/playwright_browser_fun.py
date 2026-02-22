@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time         :   2026/2/22
+# @Author       :   Gelin
+# @Software     :   PyCharm
+# @File         :   playwright_browser_fun.py.py
+
+# 获取页面的课时内容js代码
+GET_VISIBLE_CONTENT_FUNC = """()=> {
+    //1.定义变量存储所有可视元素+视口的宽高
+    const visibleElements= [];
+    const viewportHeight= window.innerHeight;
+    const viewportWeight= window.innerWidth;
+
+    //2.获取页面上的所有元素（包含可见+不可见）
+    const elements= document.querySelectorAll("body *");
+
+    //3.循环遍历所有dom逐个处理
+    for(let i= 0; i < elements.length; i++){
+        //4.获取dom元素的尺寸+位置
+        const element = elements[i];
+        const rect  = element.getBoundingClientRect();
+
+        //5.判断元素的宽高，只要有一个为0旧表示不可见
+        if(rect.height === 0 || rect.width === 0) continue;
+
+        //6.排除完全不在当前视口的元素(上方、左侧、右侧、下方)
+        if(
+            rect.bottom < 0 ||
+            rect.top > viewportHeight ||
+            rect.right < 0 ||
+            rect.left > viewportWeight
+        ) continue;
+
+        //7.使用样式来判断下当前元素是否是隐藏
+        const style= window.getComputedStyle(element);
+        if(
+            style.display === 'none' || //块隐藏
+            style.visibility === 'hidden' || // 不可见
+            style.opacity === '0' //透明度
+        ) continue;
+
+        //8.如果element为有意义的节点/元素，则添加进来
+        if(
+            element.innerText ||
+            element.tagName === 'IMG' ||
+            element.tagName === 'INPUT' ||
+            element.tagName === 'BUTTON'
+        ) visibleElements.push(element.outerHTML);
+    };
+
+    //9.将所有的可视化元素组装成字符串并拼接div标签中直接返回
+    return "<div>" + visibleElements.join(" ") + "</div>"
+}
+"""
