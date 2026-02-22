@@ -269,4 +269,72 @@ class PlaywrightBrowser(BrowserProtocol):
         await self.cleanup()
         return await self.navigate(url)
 
-    
+    async def scroll_up(self, to_top: Optional[bool] = None) -> ToolResult:
+        """向上滚动浏览器一个屏幕或者整个页面"""
+        # 1.确保页面存在
+        await self._ensure_page()
+
+        # 2.判断是否滚动到最顶部
+        if to_top:
+            await self.page.evaluate("window.scrollTo(0, 0)")
+        else:
+            await self.page.evaluate("window.scrollBy(0, -window.innerHeight)")
+
+        return ToolResult(success=True)
+
+    async def scroll_down(self, to_down: Optional[bool] = None) -> ToolResult:
+        """向下滚动浏览器一个屏幕或者到最底部"""
+        # 1.确保页面存在
+        await self._ensure_page()
+
+        # 2.判断是否滚动到最底部
+        if to_down:
+            await self.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        else:
+            await self.page.evaluate("window.scrollBy(0, window.innerHeight)")
+
+        return ToolResult(success=True)
+
+    async def screenshot(self, full_page: Optional[bool] = None) -> bytes:
+        """传递full_page完成网页截图"""
+        # 1.确保页面存在
+        await self._ensure_page()
+
+        # 2.创建一个截图配置
+        screenshot_options = {
+            "full_page": full_page,
+            "type": "png"
+        }
+
+        return await self.page.screenshot(**screenshot_options)
+
+
+    async def console_exec(self, javascript: str) -> ToolResult:
+        """传递js代码在当前页面控制台执行"""
+        # 1.确保页面存在
+        await self._ensure_page()
+        #
+        # # 2.在正式开始执行代码之前先注入logs
+        # try:
+        #     await self.page.evaluate(INJECT_CONSOLE_LOGS_FUNC)
+        # except Exception as e:
+        #     logger.warning(f"注入window.console.logs失败: {str(e)}")
+
+        # 3.正式执行js脚本
+        result = await self.page.evaluate(javascript)
+        return ToolResult(success=True, data={"result": result})
+
+    async def console_view(self, max_lines: Optional[int] = None) -> ToolResult:
+        """根据传递的行数查看控制台的日志"""
+        # 1.确保页面存在
+        await self._ensure_page()
+
+        # 2.可以指定另外一段js代码查看控制台的内容
+        logs = await self.page.evaluate("""() => {
+            return window.console.logs || [];
+        }""")
+
+        if max_lines is not None:
+            logs = logs[-max_lines:]
+
+        return ToolResult(success=True, data={"logs": logs})
